@@ -49,6 +49,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content
 .nav-links a:hover{color:var(--text)}
 .nav-links a:hover::after,.nav-links a.active::after{width:100%}
 .nav-links a.active{color:var(--text)}
+.nav-toggle{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;z-index:110}
+.nav-toggle span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:transform .3s,opacity .3s}
+.nav-toggle.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-toggle.open span:nth-child(2){opacity:0}
+.nav-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 @keyframes pulseDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
 @keyframes spinDisc{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes spinRing{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
@@ -202,10 +207,13 @@ footer b{color:var(--accent)}
 
 @media(max-width:768px){
   nav{padding:.8rem 1rem}
-  .nav-logo{font-size:.72rem;flex-shrink:0}
-  .nav-links{gap:.85rem;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;padding-left:1rem;mask-image:linear-gradient(to right,transparent,#000 14px,#000 calc(100% - 6px),transparent)}
-  .nav-links::-webkit-scrollbar{display:none}
-  .nav-links a{font-size:.68rem;white-space:nowrap}
+  .nav-logo{font-size:.75rem;flex-shrink:0}
+  .nav-toggle{display:flex}
+  .nav-links{position:fixed;top:52px;left:1rem;right:1rem;flex-direction:column;gap:0;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:.5rem;opacity:0;visibility:hidden;transform:translateY(-8px);transition:all .25s;box-shadow:0 20px 50px -15px rgba(0,0,0,.6)}
+  .nav-links.open{opacity:1;visibility:visible;transform:translateY(0)}
+  .nav-links a{font-size:.9rem;padding:.8rem 1rem;display:block;border-radius:8px}
+  .nav-links a:hover,.nav-links a.active{background:var(--accent-soft)}
+  .nav-links a::after{display:none}
   section{padding:5rem 1.2rem 1.5rem}
   .win-body{padding:1.6rem 1.3rem}
   .about-grid{grid-template-columns:1fr;text-align:left}
@@ -221,7 +229,8 @@ footer b{color:var(--accent)}
 
 <nav>
   <div class="nav-logo"><span class="dot"></span>dev<b>@</b>tyagi<span style="color:var(--muted-dim)">:~$</span></div>
-  <ul class="nav-links">
+  <button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
     <li><a href="#home" class="nav-a">home</a></li>
     <li><a href="#about" class="nav-a">about</a></li>
     <li><a href="#skills" class="nav-a">skills</a></li>
@@ -665,6 +674,28 @@ const statObs=new IntersectionObserver(entries=>{
   entries.forEach(e=>{ if(e.isIntersecting){ const el=e.target; countUp(el,+el.dataset.count,el.dataset.suffix||''); statObs.unobserve(el); } });
 },{threshold:.5});
 statEls.forEach(el=>statObs.observe(el));
+
+/* mobile hamburger menu */
+const navToggle=document.getElementById('navToggle');
+const navLinks=document.getElementById('navLinks');
+if(navToggle && navLinks){
+  navToggle.addEventListener('click',()=>{
+    navToggle.classList.toggle('open');
+    navLinks.classList.toggle('open');
+  });
+  navLinks.querySelectorAll('a').forEach(a=>{
+    a.addEventListener('click',()=>{
+      navToggle.classList.remove('open');
+      navLinks.classList.remove('open');
+    });
+  });
+  document.addEventListener('click',(e)=>{
+    if(!e.target.closest('nav') && navLinks.classList.contains('open')){
+      navToggle.classList.remove('open');
+      navLinks.classList.remove('open');
+    }
+  });
+}
 
 /* smooth nav clicks */
 document.querySelectorAll('.nav-a, a[href^="#"]').forEach(a=>{
